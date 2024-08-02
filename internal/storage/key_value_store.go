@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 )
@@ -9,6 +8,11 @@ import (
 type KeyValueStoreClient struct {
 	values *sync.Map
 }
+
+var (
+	ErrValueNotFound  = fmt.Errorf("No value found for key")
+	ErrValueNotString = fmt.Errorf("Value found is not a string")
+)
 
 // NewKeyValueStoreClient returns a key-value store client initialized with an empty map
 func NewKeyValueStoreClient() KeyValueStoreClient {
@@ -21,12 +25,12 @@ func NewKeyValueStoreClient() KeyValueStoreClient {
 func (client *KeyValueStoreClient) Read(key string) (string, error) {
 	value, ok := client.values.Load(any(key))
 	if !ok {
-		return "", errors.New(fmt.Sprintf("No value found for key %s", key))
+		return "", ErrValueNotFound
 	}
 
 	strValue, ok := value.(string)
 	if !ok {
-		return "", errors.New(fmt.Sprintf("Value found for key %s is not a string", key))
+		return "", ErrValueNotString
 	}
 
 	return strValue, nil
