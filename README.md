@@ -17,35 +17,24 @@ There are two sources of events:
 
 ![architecture](.github/architecture.png)
 
-```bash
+## Usage
+
+The following `make` target are available:
+
+```
+make run
 make help
-```
-
-## Setup
-
-To get your setup up and running the only thing you have to do is
-
-```bash
-make all
-```
-
-This will initialize a git repo, download the dependencies in the latest versions and install all needed tools.
-If needed code generation will be triggered in this target as well.
-
-## Test & lint
-
-Run linting
-
-```bash
 make lint
-```
-
-Run tests
-
-```bash
 make test
+make fmt
 ```
 
-## Credits
+## Screenshots
+
+<p align="center">
+    <img src=".github/screenshot.png" alt="Screenshot" width="800">
+</p>
+
+## Assets used
 
 <a href="https://www.vecteezy.com/free-vector/car-dashboard-icons">Car Dashboard Icons Vectors by Vecteezy</a>
