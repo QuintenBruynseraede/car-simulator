@@ -10,33 +10,59 @@ type KeyValueStoreClient struct {
 }
 
 var (
-	ErrValueNotFound  = fmt.Errorf("No value found for key")
-	ErrValueNotString = fmt.Errorf("Value found is not a string")
+	ErrValueNotFound  = fmt.Errorf("no value found for key")
+	ErrValueNotString = fmt.Errorf("value found is not a string")
 )
 
 // NewKeyValueStoreClient returns a key-value store client initialized with an empty map
-func NewKeyValueStoreClient() KeyValueStoreClient {
-	return KeyValueStoreClient{
+func NewKeyValueStoreClient() *KeyValueStoreClient {
+	return &KeyValueStoreClient{
 		values: new(sync.Map),
 	}
 }
 
-// Read returns the value stored by `key`, and an error if the value was not found or no string
-func (client *KeyValueStoreClient) Read(key string) (string, error) {
+// Read returns the value stored by `key` and panics if the value was not found or not a string
+func (client *KeyValueStoreClient) ReadString(key string) string {
 	value, ok := client.values.Load(any(key))
 	if !ok {
-		return "", ErrValueNotFound
+		panic(fmt.Sprintf("Key %s not found", key))
 	}
 
 	strValue, ok := value.(string)
 	if !ok {
-		return "", ErrValueNotString
+		panic(fmt.Sprintf("Value for key %s is not a string", key))
 	}
 
-	return strValue, nil
+	return strValue
+}
+
+// Read returns the value stored by `key` and panics if the value was not found or not a float
+func (client *KeyValueStoreClient) ReadFloat64(key string) float64 {
+	value, ok := client.values.Load(any(key))
+	if !ok {
+		panic(fmt.Sprintf("Key %s not found", key))
+	}
+
+	floatValue, ok := value.(float64)
+	if !ok {
+		panic(fmt.Sprintf("Value for key %s is not a float", key))
+	}
+
+	return floatValue
 }
 
 // Write inserts a `key`-`value` pair into the map
-func (client *KeyValueStoreClient) Write(key string, value string) {
+func (client *KeyValueStoreClient) Write(key string, value any) {
 	client.values.Store(key, value)
+}
+
+func (client *KeyValueStoreClient) Dump() map[string]string {
+	dump := make(map[string]string)
+
+	client.values.Range(func(key, value any) bool {
+		dump[key.(string)] = fmt.Sprintf("%v", value)
+		return true
+	})
+
+	return dump
 }

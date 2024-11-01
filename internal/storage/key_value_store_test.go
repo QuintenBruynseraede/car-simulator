@@ -9,16 +9,12 @@ import (
 func TestKVSCRUD(t *testing.T) {
 	client := NewKeyValueStoreClient()
 
-	// Reading a key from an empty map returns an error
-	value, err := client.Read("doesntexist")
-	assert.Error(t, err)
-	assert.Equal(t, "", value)
+	// Reading a key from an empty map will panic
+	assert.Panics(t, func() { client.ReadString("doesntexist") })
 
 	// Write then read returns the value
-	value = "world"
-	key := "hello"
+	value, key := "world", "hello"
 	client.Write(key, value)
-	read, err := client.Read(key)
-	assert.NoError(t, err)
+	read := client.ReadString(key)
 	assert.Equal(t, value, read)
 }

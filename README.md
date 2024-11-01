@@ -4,7 +4,18 @@
 
 Exploring concurrency in golang by simulating the electronics behind a car dashboard.
 
-Whenever you need help regarding the available actions, just use the following command.
+---
+
+This simulation uses a three-layered architecture (presentation, application and data).
+Small controllers are responsible for implementing a small part of the application logic
+
+Input to the application layer controllers is provided only through events on the shared event bus.
+There are two sources of events:
+
+- Clicking a control in the user interface
+- Controllers
+
+![architecture](.github/architecture.png)
 
 ```bash
 make help
@@ -34,3 +45,7 @@ Run tests
 ```bash
 make test
 ```
+
+## Credits
+
+<a href="https://www.vecteezy.com/free-vector/car-dashboard-icons">Car Dashboard Icons Vectors by Vecteezy</a>
