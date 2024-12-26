@@ -41,7 +41,7 @@ func (g *UI) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight 
 
 func main() {
 	ebiten.SetWindowSize(640, 480)
-	ebiten.SetWindowTitle("Test")
+	ebiten.SetWindowTitle("Car Simulator")
 	ebiten.SetVsyncEnabled(true)
 	if err := ebiten.RunGame(&UI{}); err != nil {
 		log.Fatal(err)
