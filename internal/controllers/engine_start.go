@@ -22,7 +22,6 @@ const (
 	KeyGear     = "gear"
 )
 
-// ChaosMonkeyController is a controller that randomly modifies the car's parameters
 type EngineStartController struct{}
 
 func NewEngineStartController() *EngineStartController {

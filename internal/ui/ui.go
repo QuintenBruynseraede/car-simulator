@@ -52,6 +52,8 @@ func NewUI(logger *zap.Logger, state storage.StorageBackend, event_bus *events.E
 		NewRPMGauge(),
 		NewButton("Engine On/Off", 528, 16, 100, 32, func() { event_bus.Publish(events.NewEvent(events.EventEngineStartPressed, nil)) }),
 		NewButton("Toggle Hazards", 528, 58, 100, 32, func() { event_bus.Publish(events.NewEvent(events.EventToggleHazardsPressed, nil)) }),
+		NewButton("Overheat engine", 528, 100, 108, 32, func() { state.Write("engine_temperature_c", 150.0) }),
+		NewButton("Overheat battery", 528, 142, 114, 32, func() { state.Write("battery_temperature_c", 150.0) }),
 		NewGasPedal(
 			func() { event_bus.Publish(events.NewEvent(events.EventGasPedalPressed, nil)) },  // Down
 			func() { event_bus.Publish(events.NewEvent(events.EventGasPedalReleased, nil)) }, // Up

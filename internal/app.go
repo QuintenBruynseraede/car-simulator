@@ -38,8 +38,6 @@ func NewApplication() *Application {
 			controllers.NewEngineStartController(),
 			controllers.NewIndicatorController(),
 			controllers.NewPhysicsController(),
-			// controllers.NewDummyController(),  // Test indicators
-			// controllers.NewChaosMonkeyController(),  // Randomly changes car temperatures
 		},
 		event_bus: event_bus,
 		ui:        ui.NewUI(logger, storage, event_bus),
@@ -50,12 +48,6 @@ func (app *Application) Run() error {
 	ctx := context.Background()
 
 	init := sync.WaitGroup{}
-	// init.Add(1)
-	// go func() {
-	// 	app.init_controller.Run(ctx, app.storage, app.event_bus, app.logger)
-	// 	init.Done()
-	// }()
-
 	init.Wait()
 	for _, controller := range app.controllers {
 		go func() {
