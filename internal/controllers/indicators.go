@@ -33,6 +33,8 @@ func (c *IndicatorController) Run(_ context.Context, kvs storage.StorageBackend,
 		default:
 			if c.hazardsOn {
 				toggleIndicators(kvs)
+			} else {
+				disableIndicators(kvs)
 			}
 			time.Sleep(time.Millisecond * 800)
 		}
@@ -54,4 +56,9 @@ func toggleIndicators(kvs storage.StorageBackend) {
 	} else {
 		kvs.Write(KeyIndicatorLeftStatus, "on")
 	}
+}
+
+func disableIndicators(kvs storage.StorageBackend) {
+	kvs.Write(KeyIndicatorRightStatus, "off")
+	kvs.Write(KeyIndicatorLeftStatus, "off")
 }

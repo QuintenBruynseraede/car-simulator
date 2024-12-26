@@ -80,5 +80,7 @@ func (i *WarningLight) Draw(screen *ebiten.Image) {
 // Not needed for now
 func (i *WarningLight) IsWithinBounds(x, y int) bool { return false }
 func (i *WarningLight) HandleLeftClick(x, y int)     {}
+func (i *WarningLight) HandleLeftDown(x, y int)      {}
+func (i *WarningLight) HandleLeftUp(x, y int)        {}
 func (i *WarningLight) HandleMouseEnter(x, y int)    {}
 func (i *WarningLight) HandleMouseLeave(x, y int)    {}

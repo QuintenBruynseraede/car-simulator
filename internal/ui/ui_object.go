@@ -10,6 +10,8 @@ type UIObject interface {
 	Draw(screen *ebiten.Image)
 	IsWithinBounds(x, y int) bool
 	HandleLeftClick(x, y int)
+	HandleLeftDown(x, y int)
+	HandleLeftUp(x, y int)
 	HandleMouseEnter(x, y int)
 	HandleMouseLeave(x, y int)
 }

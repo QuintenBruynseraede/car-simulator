@@ -37,4 +37,5 @@ make fmt
 
 ## Assets used
 
-<a href="https://www.vecteezy.com/free-vector/car-dashboard-icons">Car Dashboard Icons Vectors by Vecteezy</a>
+<a href="https://www.vecteezy.com/free-vector/car-dashboard-icons">Car Dashboard Icons Vectors by Vecteezy</a><br>
+<a href="https://pixabay.com/vectors/pedals-car-machine-gas-throttle-4519485/">Pedals Car Machine by RockMotorArt - Pixabay</a>

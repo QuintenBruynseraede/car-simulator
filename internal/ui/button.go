@@ -57,6 +57,9 @@ func (b *Button) HandleLeftClick(_, _ int) {
 	b.action()
 }
 
+func (b *Button) HandleLeftDown(_, _ int) {}
+func (b *Button) HandleLeftUp(_, _ int)   {}
+
 func (b *Button) Update(kvs storage.StorageBackend) {}
 
 func (b *Button) HandleMouseEnter(_, _ int) {

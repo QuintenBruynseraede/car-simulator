@@ -37,6 +37,7 @@ func NewApplication() *Application {
 		controllers: []controllers.Controller{
 			controllers.NewEngineStartController(),
 			controllers.NewIndicatorController(),
+			controllers.NewPhysicsController(),
 			// controllers.NewDummyController(),  // Test indicators
 			// controllers.NewChaosMonkeyController(),  // Randomly changes car temperatures
 		},

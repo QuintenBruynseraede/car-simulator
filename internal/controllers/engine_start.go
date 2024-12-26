@@ -19,6 +19,7 @@ const (
 
 	KeyVelocity = "velocity_kmh"
 	KeyRPM      = "engine_rpm"
+	KeyGear     = "gear"
 )
 
 // ChaosMonkeyController is a controller that randomly modifies the car's parameters
@@ -39,6 +40,7 @@ func (c *EngineStartController) Run(_ context.Context, kvs storage.StorageBacken
 	kvs.Write(KeyVelocity, 0.0)
 	kvs.Write(KeyRPM, 0.0)
 	kvs.Write(KeyEngineOn, "false")
+	kvs.Write(KeyGear, "1")
 
 	for {
 		select {

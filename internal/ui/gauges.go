@@ -109,3 +109,5 @@ func (g *Gauge) IsWithinBounds(x, y int) bool { return false }
 func (g *Gauge) HandleLeftClick(x, y int)     {}
 func (g *Gauge) HandleMouseEnter(x, y int)    {}
 func (g *Gauge) HandleMouseLeave(x, y int)    {}
+func (g *Gauge) HandleLeftDown(_, _ int)      {}
+func (g *Gauge) HandleLeftUp(_, _ int)        {}

@@ -89,7 +89,9 @@ func (i *Indicator) Draw(screen *ebiten.Image) {
 }
 
 // Not needed for now
-func (g *Indicator) IsWithinBounds(x, y int) bool { return false }
-func (g *Indicator) HandleLeftClick(x, y int)     {}
-func (g *Indicator) HandleMouseEnter(x, y int)    {}
-func (g *Indicator) HandleMouseLeave(x, y int)    {}
+func (i *Indicator) IsWithinBounds(x, y int) bool { return false }
+func (i *Indicator) HandleLeftClick(x, y int)     {}
+func (i *Indicator) HandleMouseEnter(x, y int)    {}
+func (i *Indicator) HandleMouseLeave(x, y int)    {}
+func (i *Indicator) HandleLeftDown(_, _ int)      {}
+func (i *Indicator) HandleLeftUp(_, _ int)        {}
