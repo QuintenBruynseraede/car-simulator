@@ -70,7 +70,7 @@ func NewUI(logger *zap.Logger, state storage.StorageBackend, event_bus *events.E
 
 func (ui *UI) Start() error {
 	ebiten.SetWindowSize(window_size_x, window_size_y)
-	ebiten.SetWindowTitle("Test")
+	ebiten.SetWindowTitle("Car Simulator")
 	ebiten.SetVsyncEnabled(true)
 
 	if err := ebiten.RunGame(ui); err != nil {
