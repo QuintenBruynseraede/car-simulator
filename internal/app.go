@@ -43,9 +43,10 @@ func NewApplication(simulate bool) *Application {
 		validateCh = make(chan bool) // Unbuffered, i.e. size 0!
 		kvs = storage.NewKeyValueStoreClient(validateCh)
 	} else {
-		userInterface = ui.NewUI(logger, kvs, event_bus)
+		logger.Info("Running in UI mode")
 		validator = &dst.RuntimeValidator{}
-		kvs = storage.NewKeyValueStoreClient(nil) // No validation channel
+		kvs = storage.NewKeyValueStoreClient(nil)
+		userInterface = ui.NewUI(logger, kvs, event_bus)
 	}
 
 	return &Application{

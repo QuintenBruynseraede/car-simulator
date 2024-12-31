@@ -71,7 +71,9 @@ func (client *KeyValueStoreClient) ReadInt(key string) (int, error) {
 // Write inserts a `key`-`value` pair into the map
 func (client *KeyValueStoreClient) Write(key string, value any) {
 	client.values.Store(key, value)
-	client.validateCh <- true // Notify for validation and wait until it's done
+	if client.validateCh != nil {
+		client.validateCh <- true // Notify for validation and wait until it's done
+	}
 }
 
 func (client *KeyValueStoreClient) Dump() map[string]string {
