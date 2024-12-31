@@ -74,9 +74,17 @@ func NewIndicatorRight() *Indicator {
 
 func (i *Indicator) Update(kvs storage.StorageBackend) {
 	if i.side == "left" {
-		i.is_on = kvs.ReadString("indicator_left_status") == "on"
+		isOn, err := kvs.ReadString("indicator_left_status")
+		if err != nil {
+			panic(err)
+		}
+		i.is_on = isOn == "on"
 	} else if i.side == "right" {
-		i.is_on = kvs.ReadString("indicator_right_status") == "on"
+		isOn, err := kvs.ReadString("indicator_right_status")
+		if err != nil {
+			panic(err)
+		}
+		i.is_on = isOn == "on"
 	}
 }
 

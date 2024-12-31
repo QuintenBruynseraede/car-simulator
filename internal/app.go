@@ -2,9 +2,9 @@ package internal
 
 import (
 	"context"
-	"sync"
 
 	"github.com/user/car-simulator/internal/controllers"
+	"github.com/user/car-simulator/internal/dst"
 	"github.com/user/car-simulator/internal/events"
 	"github.com/user/car-simulator/internal/logging"
 	"github.com/user/car-simulator/internal/storage"
@@ -13,25 +13,43 @@ import (
 )
 
 type Application struct {
-	storage storage.StorageBackend
-	logger  *zap.Logger
-	// init_controller controllers.Controller
-	controllers []controllers.Controller
+	Storage     storage.StorageBackend
+	logger      *zap.Logger
 	event_bus   *events.EventBus
 	ui          *ui.UI
+	controllers []controllers.Controller
+	validator   dst.Validator
+	simulate    bool
+	validateCh  chan bool
 }
 
-func NewApplication() *Application {
+func NewApplication(simulate bool) *Application {
 	logger, err := logging.NewAtLevel("info")
-	storage := storage.NewKeyValueStoreClient()
 	event_bus := events.NewEventBus()
 
 	if err != nil {
 		panic(err)
 	}
 
+	var userInterface *ui.UI
+	var validator dst.Validator
+	var kvs storage.StorageBackend
+	var validateCh chan bool
+
+	if simulate {
+		logger.Info("Running in headless mode")
+		userInterface = &ui.UI{}
+		validator = &dst.DSTValidator{Logger: logger}
+		validateCh = make(chan bool) // Unbuffered, i.e. size 0!
+		kvs = storage.NewKeyValueStoreClient(validateCh)
+	} else {
+		userInterface = ui.NewUI(logger, kvs, event_bus)
+		validator = &dst.RuntimeValidator{}
+		kvs = storage.NewKeyValueStoreClient(nil) // No validation channel
+	}
+
 	return &Application{
-		storage: storage,
+		Storage: kvs,
 		logger:  logger,
 		// init_controller:
 		controllers: []controllers.Controller{
@@ -39,24 +57,39 @@ func NewApplication() *Application {
 			controllers.NewIndicatorController(),
 			controllers.NewPhysicsController(),
 		},
-		event_bus: event_bus,
-		ui:        ui.NewUI(logger, storage, event_bus),
+		event_bus:  event_bus,
+		ui:         userInterface,
+		validator:  validator,
+		simulate:   simulate,
+		validateCh: validateCh,
 	}
 }
 
 func (app *Application) Run() error {
 	ctx := context.Background()
 
-	init := sync.WaitGroup{}
-	init.Wait()
 	for _, controller := range app.controllers {
 		go func() {
-			controller.Run(ctx, app.storage, app.event_bus, app.logger)
+			controller.Run(ctx, app.Storage, app.event_bus, app.logger)
 		}()
 	}
 
-	if err := app.ui.Start(); err != nil {
-		return err
+	var err error
+	if app.simulate { // Run simulation
+		for {
+			msg := <-app.validateCh
+			if msg {
+				err = app.validator.Validate(app.Storage)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	} else {
+		err = app.ui.Start() // Run UI
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -26,6 +26,9 @@ fmt: ## Formats all code with go fmt
 run: fmt ## Run the app
 	@go run ./cmd/car-simulator/main.go
 
+dst: ## Run the app in simulation mode
+	@go run ./cmd/car-simulator-dst/main.go 
+
 test-build: ## Tests whether the code compiles
 	@go build -o /dev/null ./...
 

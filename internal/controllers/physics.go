@@ -159,7 +159,11 @@ func (p *PhysicsController) Run(_ context.Context, kvs storage.StorageBackend, e
 		case <-gas_pressed:
 			car.throttle = 1
 		case <-gas_released:
-			if kvs.ReadString(KeyEngineOn) == "true" {
+			on, err := kvs.ReadString(KeyEngineOn)
+			if err != nil {
+				panic(err)
+			}
+			if on == "true" {
 				car.throttle = -0.3
 			} else {
 				car.throttle = -2

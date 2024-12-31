@@ -6,7 +6,8 @@ import (
 )
 
 type KeyValueStoreClient struct {
-	values *sync.Map
+	values     *sync.Map
+	validateCh chan bool // Must be unbuffered, e.g. size 0!
 }
 
 var (
@@ -15,17 +16,18 @@ var (
 )
 
 // NewKeyValueStoreClient returns a key-value store client initialized with an empty map
-func NewKeyValueStoreClient() *KeyValueStoreClient {
+func NewKeyValueStoreClient(validateCh chan bool) *KeyValueStoreClient {
 	return &KeyValueStoreClient{
-		values: new(sync.Map),
+		values:     new(sync.Map),
+		validateCh: validateCh,
 	}
 }
 
 // Read returns the value stored by `key` and panics if the value was not found or not a string
-func (client *KeyValueStoreClient) ReadString(key string) string {
+func (client *KeyValueStoreClient) ReadString(key string) (string, error) {
 	value, ok := client.values.Load(any(key))
 	if !ok {
-		panic(fmt.Sprintf("Key %s not found", key))
+		return "", ErrValueNotFound
 	}
 
 	strValue, ok := value.(string)
@@ -33,14 +35,14 @@ func (client *KeyValueStoreClient) ReadString(key string) string {
 		panic(fmt.Sprintf("Value for key %s is not a string", key))
 	}
 
-	return strValue
+	return strValue, nil
 }
 
 // ReadFloat64 returns the value stored by `key` and panics if the value was not found or not a float
-func (client *KeyValueStoreClient) ReadFloat64(key string) float64 {
+func (client *KeyValueStoreClient) ReadFloat64(key string) (float64, error) {
 	value, ok := client.values.Load(any(key))
 	if !ok {
-		panic(fmt.Sprintf("Key %s not found", key))
+		return 0, ErrValueNotFound
 	}
 
 	floatValue, ok := value.(float64)
@@ -48,14 +50,14 @@ func (client *KeyValueStoreClient) ReadFloat64(key string) float64 {
 		panic(fmt.Sprintf("Value for key %s is not a float", key))
 	}
 
-	return floatValue
+	return floatValue, nil
 }
 
 // ReadInt returns the value stored by `key` and panics if the value was not found or not an int
-func (client *KeyValueStoreClient) ReadInt(key string) int {
+func (client *KeyValueStoreClient) ReadInt(key string) (int, error) {
 	value, ok := client.values.Load(any(key))
 	if !ok {
-		panic(fmt.Sprintf("Key %s not found", key))
+		return 0, ErrValueNotFound
 	}
 
 	intValue, ok := value.(int)
@@ -63,12 +65,13 @@ func (client *KeyValueStoreClient) ReadInt(key string) int {
 		panic(fmt.Sprintf("Value for key %s is not an int", key))
 	}
 
-	return intValue
+	return intValue, nil
 }
 
 // Write inserts a `key`-`value` pair into the map
 func (client *KeyValueStoreClient) Write(key string, value any) {
 	client.values.Store(key, value)
+	client.validateCh <- true // Notify for validation and wait until it's done
 }
 
 func (client *KeyValueStoreClient) Dump() map[string]string {

@@ -43,14 +43,22 @@ func (c *IndicatorController) Run(_ context.Context, kvs storage.StorageBackend,
 
 // Flip the state of both indicators
 func toggleIndicators(kvs storage.StorageBackend) {
-	stateRight := kvs.ReadString(KeyIndicatorRightStatus)
+	stateRight, err := kvs.ReadString(KeyIndicatorRightStatus)
+	if err != nil {
+		panic(err)
+	}
+
 	if stateRight == "on" {
 		kvs.Write(KeyIndicatorRightStatus, "off")
 	} else {
 		kvs.Write(KeyIndicatorRightStatus, "on")
 	}
 
-	stateLeft := kvs.ReadString(KeyIndicatorLeftStatus)
+	stateLeft, err := kvs.ReadString(KeyIndicatorLeftStatus)
+	if err != nil {
+		panic(err)
+	}
+
 	if stateLeft == "on" {
 		kvs.Write(KeyIndicatorLeftStatus, "off")
 	} else {

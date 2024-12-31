@@ -66,7 +66,11 @@ func NewBatteryWarningLight() *WarningLight {
 }
 
 func (i *WarningLight) Update(kvs storage.StorageBackend) {
-	i.is_on = kvs.ReadFloat64(i.temperature_key) > i.temperature_treshold
+	isOn, err := kvs.ReadFloat64(i.temperature_key)
+	if err != nil {
+		panic(err)
+	}
+	i.is_on = isOn > i.temperature_treshold
 }
 
 func (i *WarningLight) Draw(screen *ebiten.Image) {

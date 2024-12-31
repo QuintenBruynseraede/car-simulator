@@ -41,7 +41,11 @@ func NewEightSegmentDisplay(x float64, y float64) *EightSegmentDisplay {
 }
 
 func (i *EightSegmentDisplay) Update(kvs storage.StorageBackend) {
-	i.value = kvs.ReadInt("gear")
+	value, err := kvs.ReadInt("gear")
+	if err != nil {
+		panic(err)
+	}
+	i.value = value
 }
 
 func (i *EightSegmentDisplay) Draw(screen *ebiten.Image) {

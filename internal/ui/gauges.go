@@ -78,7 +78,10 @@ func NewRPMGauge() *Gauge {
 }
 
 func (g *Gauge) Update(kvs storage.StorageBackend) {
-	speed := kvs.ReadFloat64(g.value_key)
+	speed, err := kvs.ReadFloat64(g.value_key)
+	if err != nil {
+		panic(err)
+	}
 
 	perc := (speed - g.min_value) / (g.max_value - g.min_value)
 	g.angle = g.min_value_angle + perc*(2*math.Pi+g.max_value_angle-g.min_value_angle)

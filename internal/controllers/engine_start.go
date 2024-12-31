@@ -44,7 +44,11 @@ func (c *EngineStartController) Run(_ context.Context, kvs storage.StorageBacken
 	for {
 		select {
 		case <-start_event:
-			if kvs.ReadString(KeyEngineOn) != "true" {
+			on, err := kvs.ReadString(KeyEngineOn)
+			if err != nil {
+				panic(err)
+			}
+			if on != "true" {
 				logger.Info("Starting Engine")
 				kvs.Write(KeyBatteryTemperature, 25.0)
 				kvs.Write(KeyEngineTemperature, 25.0)
