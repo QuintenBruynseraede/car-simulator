@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"time"
 
 	"github.com/user/car-simulator/internal/events"
 	"github.com/user/car-simulator/internal/storage"
@@ -28,10 +27,7 @@ func NewEngineStartController() *EngineStartController {
 	return &EngineStartController{}
 }
 
-func (c *EngineStartController) Run(_ context.Context, kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error {
-	start_event := make(chan events.Event)
-	eventBus.Subscribe(events.EventEngineStartPressed, start_event)
-
+func (c *EngineStartController) Init(kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error {
 	kvs.Write(KeyBatteryTemperature, 15.0)
 	kvs.Write(KeyEngineTemperature, 15.0)
 	kvs.Write(KeyIndicatorLeftStatus, "off")
@@ -40,6 +36,12 @@ func (c *EngineStartController) Run(_ context.Context, kvs storage.StorageBacken
 	kvs.Write(KeyRPM, 0.0)
 	kvs.Write(KeyEngineOn, "false")
 	kvs.Write(KeyGear, "1")
+	return nil
+}
+
+func (c *EngineStartController) Run(_ context.Context, kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error {
+	start_event := make(chan events.Event)
+	eventBus.Subscribe(events.EventEngineStartPressed, start_event)
 
 	for {
 		select {
@@ -52,11 +54,14 @@ func (c *EngineStartController) Run(_ context.Context, kvs storage.StorageBacken
 				logger.Info("Starting Engine")
 				kvs.Write(KeyBatteryTemperature, 25.0)
 				kvs.Write(KeyEngineTemperature, 25.0)
-				kvs.Write(KeyIndicatorLeftStatus, "off")
-				kvs.Write(KeyIndicatorRightStatus, "off")
 				kvs.Write(KeyVelocity, 0.0)
 				kvs.Write(KeyRPM, 1000.0)
 				kvs.Write(KeyEngineOn, "true")
+
+				kvs.PauseValidation() // No validation between switching left/right off
+				kvs.Write(KeyIndicatorLeftStatus, "off")
+				kvs.Write(KeyIndicatorRightStatus, "off")
+				kvs.StartValidation()
 
 				logger.Info("Engine started")
 			} else {
@@ -65,7 +70,8 @@ func (c *EngineStartController) Run(_ context.Context, kvs storage.StorageBacken
 				kvs.Write(KeyEngineOn, "false")
 			}
 		default:
-			time.Sleep(time.Millisecond * 100)
+			// Nothing
+			// time.Sleep(time.Millisecond * 100)
 		}
 	}
 }

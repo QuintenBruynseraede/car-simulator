@@ -9,5 +9,6 @@ import (
 )
 
 type Controller interface {
+	Init(kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error
 	Run(ctx context.Context, kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error
 }

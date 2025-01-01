@@ -6,8 +6,9 @@ import (
 )
 
 type KeyValueStoreClient struct {
-	values     *sync.Map
-	validateCh chan bool // Must be unbuffered, e.g. size 0!
+	values           *sync.Map
+	validateCh       chan bool // Must be unbuffered, e.g. size 0!
+	enableValidation bool
 }
 
 var (
@@ -18,9 +19,18 @@ var (
 // NewKeyValueStoreClient returns a key-value store client initialized with an empty map
 func NewKeyValueStoreClient(validateCh chan bool) *KeyValueStoreClient {
 	return &KeyValueStoreClient{
-		values:     new(sync.Map),
-		validateCh: validateCh,
+		values:           new(sync.Map),
+		validateCh:       validateCh,
+		enableValidation: false,
 	}
+}
+
+func (client *KeyValueStoreClient) StartValidation() {
+	client.enableValidation = true
+}
+
+func (client *KeyValueStoreClient) PauseValidation() {
+	client.enableValidation = false
 }
 
 // Read returns the value stored by `key` and panics if the value was not found or not a string
@@ -71,7 +81,7 @@ func (client *KeyValueStoreClient) ReadInt(key string) (int, error) {
 // Write inserts a `key`-`value` pair into the map
 func (client *KeyValueStoreClient) Write(key string, value any) {
 	client.values.Store(key, value)
-	if client.validateCh != nil {
+	if client.validateCh != nil && client.enableValidation {
 		client.validateCh <- true // Notify for validation and wait until it's done
 	}
 }

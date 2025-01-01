@@ -37,7 +37,9 @@ type Car struct {
 	brakePressed bool
 }
 
-type PhysicsController struct{}
+type PhysicsController struct {
+	car *Car
+}
 
 func NewCar() *Car {
 	return &Car{
@@ -139,9 +141,12 @@ func (c *Car) GearRatio() float64 {
 	}
 }
 
-func (p *PhysicsController) Run(_ context.Context, kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error {
-	car := NewCar()
+func (p *PhysicsController) Init(kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error {
+	p.car = NewCar()
+	return nil
+}
 
+func (p *PhysicsController) Run(_ context.Context, kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error {
 	gas_pressed := make(chan events.Event)
 	eventBus.Subscribe(events.EventGasPedalPressed, gas_pressed)
 
@@ -157,28 +162,28 @@ func (p *PhysicsController) Run(_ context.Context, kvs storage.StorageBackend, e
 	for {
 		select {
 		case <-gas_pressed:
-			car.throttle = 1
+			p.car.throttle = 1
 		case <-gas_released:
 			on, err := kvs.ReadString(KeyEngineOn)
 			if err != nil {
 				panic(err)
 			}
 			if on == "true" {
-				car.throttle = -0.3
+				p.car.throttle = -0.3
 			} else {
-				car.throttle = -2
+				p.car.throttle = -2
 			}
 		case <-brake_pressed:
-			car.brakePressed = true
+			p.car.brakePressed = true
 		case <-brake_released:
-			car.brakePressed = false
+			p.car.brakePressed = false
 		default:
-			td := time.Since(car.lastUpdate).Seconds()
-			car.Update(td)
-			car.lastUpdate = time.Now()
-			kvs.Write(KeyRPM, car.rpm)
-			kvs.Write(KeyVelocity, car.velocity)
-			kvs.Write(KeyGear, car.gear)
+			td := time.Since(p.car.lastUpdate).Seconds()
+			p.car.Update(td)
+			p.car.lastUpdate = time.Now()
+			kvs.Write(KeyRPM, p.car.rpm)
+			kvs.Write(KeyVelocity, p.car.velocity)
+			kvs.Write(KeyGear, p.car.gear)
 		}
 	}
 }

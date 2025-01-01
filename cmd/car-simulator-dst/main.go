@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	app := internal.NewApplication(true)
+	app := internal.NewSimulation()
 
 	if err := app.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "an error occurred: %s\n", err)

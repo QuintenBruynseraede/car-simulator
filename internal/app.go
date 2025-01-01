@@ -15,68 +15,95 @@ import (
 type Application struct {
 	Storage     storage.StorageBackend
 	logger      *zap.Logger
-	event_bus   *events.EventBus
+	eventBus    *events.EventBus
 	ui          *ui.UI
 	controllers []controllers.Controller
-	validator   dst.Validator
-	simulate    bool
-	validateCh  chan bool
+	// DST
+	validator      dst.Validator
+	simulate       bool
+	validateCh     chan bool
+	eventGenerator dst.EventGenerator
 }
 
-func NewApplication(simulate bool) *Application {
+func NewUIApplication() *Application {
 	logger, err := logging.NewAtLevel("info")
-	event_bus := events.NewEventBus()
-
 	if err != nil {
 		panic(err)
 	}
 
-	var userInterface *ui.UI
-	var validator dst.Validator
-	var kvs storage.StorageBackend
-	var validateCh chan bool
-
-	if simulate {
-		logger.Info("Running in headless mode")
-		userInterface = &ui.UI{}
-		validator = &dst.DSTValidator{Logger: logger}
-		validateCh = make(chan bool) // Unbuffered, i.e. size 0!
-		kvs = storage.NewKeyValueStoreClient(validateCh)
-	} else {
-		logger.Info("Running in UI mode")
-		validator = &dst.RuntimeValidator{}
-		kvs = storage.NewKeyValueStoreClient(nil)
-		userInterface = ui.NewUI(logger, kvs, event_bus)
-	}
+	logger.Info("Running in UI mode")
+	kvs := storage.NewKeyValueStoreClient(nil)
+	eventBus := events.NewEventBus()
 
 	return &Application{
 		Storage: kvs,
 		logger:  logger,
-		// init_controller:
 		controllers: []controllers.Controller{
 			controllers.NewEngineStartController(),
 			controllers.NewIndicatorController(),
 			controllers.NewPhysicsController(),
 		},
-		event_bus:  event_bus,
-		ui:         userInterface,
-		validator:  validator,
-		simulate:   simulate,
-		validateCh: validateCh,
+		eventBus: eventBus,
+		ui:       ui.NewUI(logger, kvs, eventBus),
+		// DST
+		validator:      &dst.RuntimeValidator{},
+		simulate:       false,
+		validateCh:     nil,
+		eventGenerator: dst.NewDummyEventGenerator(),
+	}
+}
+
+func NewSimulation() *Application {
+	logger, err := logging.NewAtLevel("info")
+	if err != nil {
+		panic(err)
+	}
+
+	logger.Info("Running in headless mode")
+	validateCh := make(chan bool) // Unbuffered!
+	eventBus := events.NewEventBus()
+
+	return &Application{
+		Storage: storage.NewKeyValueStoreClient(validateCh),
+		logger:  logger,
+		controllers: []controllers.Controller{
+			controllers.NewEngineStartController(),
+			controllers.NewIndicatorController(),
+			controllers.NewPhysicsController(),
+		},
+		eventBus: eventBus,
+		ui:       &ui.UI{},
+		// DST
+		validator:      &dst.DSTValidator{Logger: logger},
+		simulate:       true,
+		validateCh:     validateCh,
+		eventGenerator: dst.NewRandomEventGenerator(logger, eventBus),
 	}
 }
 
 func (app *Application) Run() error {
 	ctx := context.Background()
 
+	// Init all controllers
+	app.logger.Debug("Starting controller initialization")
+	for _, controller := range app.controllers {
+		controller.Init(app.Storage, app.eventBus, app.logger)
+	}
+	app.logger.Debug("All controllers initialized")
+
+	// Start controllers
 	for _, controller := range app.controllers {
 		go func() {
-			controller.Run(ctx, app.Storage, app.event_bus, app.logger)
+			controller.Run(ctx, app.Storage, app.eventBus, app.logger)
 		}()
 	}
 
 	var err error
 	if app.simulate { // Run simulation
+		// Move to app initialization
+		app.eventGenerator.Run()
+		app.Storage.StartValidation()
+
 		for {
 			msg := <-app.validateCh
 			if msg {

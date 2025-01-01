@@ -20,6 +20,11 @@ func NewIndicatorController() *IndicatorController {
 	}
 }
 
+func (c *IndicatorController) Init(kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error {
+	disableIndicators(kvs)
+	return nil
+}
+
 func (c *IndicatorController) Run(_ context.Context, kvs storage.StorageBackend, eventBus *events.EventBus, logger *zap.Logger) error {
 	logger.Info("Starting Indicator controller")
 
@@ -48,15 +53,16 @@ func toggleIndicators(kvs storage.StorageBackend) {
 		panic(err)
 	}
 
+	stateLeft, err := kvs.ReadString(KeyIndicatorLeftStatus)
+	if err != nil {
+		panic(err)
+	}
+
+	kvs.PauseValidation()
 	if stateRight == "on" {
 		kvs.Write(KeyIndicatorRightStatus, "off")
 	} else {
 		kvs.Write(KeyIndicatorRightStatus, "on")
-	}
-
-	stateLeft, err := kvs.ReadString(KeyIndicatorLeftStatus)
-	if err != nil {
-		panic(err)
 	}
 
 	if stateLeft == "on" {
@@ -64,9 +70,12 @@ func toggleIndicators(kvs storage.StorageBackend) {
 	} else {
 		kvs.Write(KeyIndicatorLeftStatus, "on")
 	}
+	kvs.StartValidation()
 }
 
 func disableIndicators(kvs storage.StorageBackend) {
+	kvs.PauseValidation()
 	kvs.Write(KeyIndicatorRightStatus, "off")
 	kvs.Write(KeyIndicatorLeftStatus, "off")
+	kvs.StartValidation()
 }

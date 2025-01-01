@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	app := internal.NewApplication(false)
+	app := internal.NewUIApplication()
 
 	if err := app.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "an error occurred: %s\n", err)
